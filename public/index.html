@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Autorisation Droit à l'Image — Tournage</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --dark: #0f172a;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --warning: #b45309;
+      --warning-bg: #fffbeb;
+      --danger: #dc2626;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 16px;
+      padding-bottom: 48px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--surface);
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      border: 1px solid #e2e8f0;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--dark);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .brand-title {
+      font-weight: 700;
+      font-size: 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      background: var(--success);
+    }
+    .dot.warn { background: #f59e0b; }
+    .mode-switch {
+      display: flex;
+      background: #f1f5f9;
+      padding: 3px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .mode-btn {
+      border: none;
+      background: transparent;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .mode-btn.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    h1, h2, h3 { margin: 0 0 8px 0; line-height: 1.25; }
+    h1 { font-size: 1.35rem; }
+    h2 { font-size: 1.15rem; }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    .field { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+    input[type="text"], input[type="email"], input[type="tel"], input[type="password"], textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+      color: var(--text);
+      background: #fff;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 560px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .check-row input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      accent-color: var(--primary);
+    }
+    .legal-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 0.85rem;
+      color: #1e293b;
+      max-height: 210px;
+      overflow-y: auto;
+      margin-bottom: 14px;
+      white-space: pre-line;
+    }
+    .sig-wrapper {
+      border: 2px dashed #94a3b8;
+      border-radius: 12px;
+      background: #ffffff;
+      position: relative;
+      overflow: hidden;
+      touch-action: none;
+    }
+    #signatureCanvas {
+      display: block;
+      width: 100%;
+      height: 200px;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    .sig-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.05s;
+    }
+    .btn:active { transform: scale(0.99); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-dark { background: var(--dark); color: #fff; }
+    .btn-outline { background: #fff; color: var(--text); border: 1.5px solid var(--border); }
+    .btn-danger { background: #fee2e2; color: var(--danger); }
+    .btn-sm { padding: 8px 12px; font-size: 0.84rem; }
+    .btn-full { width: 100%; }
+    .photo-preview-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .photo-thumb {
+      width: 64px;
+      height: 64px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: var(--surface);
+      padding: 6px;
+      border-radius: var(--radius);
+      border: 1px solid #e2e8f0;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      border: none;
+      background: transparent;
+      padding: 10px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--dark);
+      color: #fff;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: #e0e7ff;
+      color: var(--primary-dark);
+      margin-left: 4px;
+    }
+    .qr-card {
+      text-align: center;
+      padding: 24px 16px;
+    }
+    .qr-frame {
+      display: inline-block;
+      padding: 20px;
+      background: #fff;
+      border: 2px solid var(--dark);
+      border-radius: 18px;
+      margin: 16px auto;
+    }
+    #qrContainer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 220px;
+    }
+    .banner {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      margin-bottom: 14px;
+      border: 1px solid transparent;
+    }
+    .banner-warn { background: var(--warning-bg); color: var(--warning); border-color: #fde68a; }
+    .banner-ok { background: var(--success-bg); color: var(--success); border-color: #a7f3d0; }
+    .banner-err { background: #fef2f2; color: var(--danger); border-color: #fecaca; }
+    .sig-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      background: #fff;
+    }
+    .sig-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .sig-mini-img {
+      height: 54px;
+      max-width: 180px;
+      object-fit: contain;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fff;
+      padding: 4px;
+    }
+    .hidden { display: none !important; }
+
+    /* Modal PIN & Fullscreen QR */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 999;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+    .fs-qr {
+      position: fixed;
+      inset: 0;
+      background: #ffffff;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .fs-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">🎥</div>
+        <div style="min-width:0">
+          <div class="brand-title" id="headerProjectName">Chargement...</div>
+          <div class="brand-sub">
+            <span class="dot" id="statusDot"></span>
+            <span id="headerStatusText">Autorisation droit à l'image</span>
+          </div>
+        </div>
+      </div>
+      <div class="mode-switch">
+        <button class="mode-btn active" id="btnModePassant" onclick="switchView('passant')">Passant</button>
+        <button class="mode-btn" id="btnModeProd" onclick="openProdView()">🔒 Production</button>
+      </div>
+    </header>
+
+    <!-- VUE PASSANT -->
+    <main id="viewPassant">
+      <div id="passantFormCard" class="card">
+        <h1>Autorisation de droit à l'image</h1>
+        <p class="muted" style="margin-bottom:16px">
+          Merci de prendre 30 secondes pour signer votre autorisation de diffusion pour le tournage <strong id="introProjectName"></strong>.
+        </p>
+
+        <div id="formError" class="banner banner-err hidden"></div>
+
+        <form id="releaseForm" novalidate>
+          <div class="field">
+            <label for="fullName">Prénom et Nom *</label>
+            <input type="text" id="fullName" required placeholder="Ex : Alex Martin" autocomplete="name" />
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="email">E-mail (recommandé pour copie / RGPD)</label>
+              <input type="email" id="email" placeholder="alex@exemple.fr" autocomplete="email" />
+            </div>
+            <div class="field">
+              <label for="phone">Téléphone (facultatif)</label>
+              <input type="tel" id="phone" placeholder="06 00 00 00 00" autocomplete="tel" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="check-row">
+              <input type="checkbox" id="isMinor" />
+              <span><strong>Le participant est mineur</strong> (moins de 18 ans) — signature par un représentant légal requise</span>
+            </label>
+          </div>
+
+          <div id="guardianSection" class="grid-2 hidden" style="margin-bottom:14px; padding:12px; background:#fffbeb; border-radius:10px; border:1px solid #fde68a;">
+            <div class="field" style="margin:0">
+              <label for="guardianName">Nom du représentant légal *</label>
+              <input type="text" id="guardianName" placeholder="Prénom et Nom du parent/tuteur" />
+            </div>
+            <div class="field" style="margin:0">
+              <label for="guardianRelation">Qualité (parent / tuteur)</label>
+              <input type="text" id="guardianRelation" placeholder="Ex : Mère, Père, Tuteur" value="Parent / Représentant légal" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Photo d'identification rapide (facultatif — aide au montage)</label>
+            <input type="file" id="photoInput" accept="image/*" capture="user" style="display:none" />
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+              <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('photoInput').click()">
+                📷 Prendre un selfie / Choisir une photo
+              </button>
+              <button type="button" id="removePhotoBtn" class="btn btn-danger btn-sm hidden" onclick="clearPhoto()">
+                Supprimer la photo
+              </button>
+            </div>
+            <div id="photoPreviewWrap" class="photo-preview-wrap hidden">
+              <img id="photoPreview" class="photo-thumb" alt="Aperçu" />
+              <span class="muted">Photo compressée prête à être jointe.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Texte de l'autorisation (Art. 9 du Code civil & RGPD)</label>
+            <div class="legal-box" id="legalTextPreview"></div>
+            <label class="check-row">
+              <input type="checkbox" id="accepted" required />
+              <span>J'ai lu et j'accepte librement les termes de cette autorisation de captation et de diffusion de mon image et de ma voix. *</span>
+            </label>
+          </div>
+
+          <div class="field">
+            <label>Signature manuscrite (au doigt) *</label>
+            <div class="sig-wrapper">
+              <canvas id="signatureCanvas"></canvas>
+            </div>
+            <div class="sig-actions">
+              <span class="muted" style="font-size:0.8rem">Signez dans le cadre ci-dessus</span>
+              <button type="button" class="btn btn-outline btn-sm" onclick="clearSignature()">Effacer la signature</button>
+            </div>
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn btn-primary btn-full" style="padding:15px; font-size:1.05rem;">
+            Valider et signer l'autorisation
+          </button>
+        </form>
+      </div>
+
+      <!-- CONFIRMATION PASSANT -->
+      <div id="passantSuccessCard" class="card hidden" style="text-align:center; padding:32px 20px;">
+        <div style="font-size:3rem; margin-bottom:8px;">✅</div>
+        <h1 style="color:var(--success)">Autorisation enregistrée !</h1>
+        <p class="muted" id="successSummary" style="margin:10px 0 22px 0;"></p>
+        <div style="display:flex; flex-direction:column; gap:10px; max-width:340px; margin:0 auto;">
+          <button type="button" class="btn btn-dark btn-full" onclick="downloadLastPdf()">
+            📄 Télécharger mon récapitulatif PDF
+          </button>
+          <button type="button" class="btn btn-outline btn-full" onclick="resetForNextPerson()">
+            Nouvelle signature (personne suivante)
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- VUE PRODUCTION -->
+    <section id="viewProd" class="hidden">
+      <div id="volumeWarningBanner" class="banner banner-warn hidden">
+        ⚠️ <strong>Stockage temporaire détecté :</strong> ajoutez un <strong>Volume</strong> monté sur <code>/data</code> dans Railway pour conserver les signatures lors des redémarrages.
+      </div>
+      <div id="pinWarningBanner" class="banner banner-warn hidden">
+        🔐 <strong>Code PIN par défaut actif (1234) :</strong> ajoutez la variable <code>ADMIN_PIN</code> dans Railway pour sécuriser l'accès Production.
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" id="tabQr" onclick="switchProdTab('qr')">QR Code</button>
+        <button class="tab-btn" id="tabSigned" onclick="switchProdTab('signed')">Signés <span class="badge" id="signedCountBadge">0</span></button>
+        <button class="tab-btn" id="tabSettings" onclick="switchProdTab('settings')">Réglages</button>
+      </div>
+
+      <!-- TAB QR CODE -->
+      <div id="prodPanelQr" class="card qr-card">
+        <h2>QR Code à scanner dans la rue</h2>
+        <p class="muted">Faites scanner ce code aux passants pour ouvrir directement le formulaire sur leur téléphone.</p>
+
+        <div class="qr-frame">
+          <div id="qrContainer"></div>
+          <div style="margin-top:12px; font-weight:700; font-size:1.05rem;" id="qrCardTitle"></div>
+          <div style="font-size:0.75rem; color:var(--primary); font-weight:700; letter-spacing:0.06em;">DROIT À L'IMAGE — TOURNAGE</div>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:20px;">
+          <button type="button" class="btn btn-primary" onclick="openFullscreenQr()">⛶ Mode plein écran</button>
+          <button type="button" class="btn btn-dark" onclick="downloadQrPoster()">⬇ Télécharger affiche PNG</button>
+        </div>
+
+        <div style="text-align:left; border-top:1px solid #e2e8f0; padding-top:16px;">
+          <label for="qrUrlInput">Lien public encodé dans le QR Code</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="qrUrlInput" />
+            <button type="button" class="btn btn-outline" onclick="copyQrUrl()">Copier</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB SIGNÉS -->
+      <div id="prodPanelSigned" class="card hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+          <h2 style="margin:0">Autorisations reçues</h2>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="loadSignatures()">↻ Actualiser</button>
+            <button type="button" class="btn btn-dark btn-sm" onclick="exportCsv()">⬇ Export CSV (Excel)</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <input type="text" id="searchInput" placeholder="Rechercher un nom ou un e-mail..." oninput="renderSignaturesList()" />
+        </div>
+
+        <div id="signaturesList"></div>
+      </div>
+
+      <!-- TAB RÉGLAGES -->
+      <div id="prodPanelSettings" class="card hidden">
+        <h2>Réglages du tournage</h2>
+        <p class="muted" style="margin-bottom:16px;">Ces informations mettent à jour le texte juridique en temps réel pour tous les passants.</p>
+        <div id="settingsFeedback" class="banner banner-ok hidden"></div>
+
+        <form id="settingsForm">
+          <div class="field">
+            <label for="setProjectName">Nom du projet / vidéo</label>
+            <input type="text" id="setProjectName" required />
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="setProducer">Producteur / Chaîne / Structure</label>
+              <input type="text" id="setProducer" required />
+            </div>
+            <div class="field">
+              <label for="setRgpdEmail">E-mail de contact RGPD</label>
+              <input type="email" id="setRgpdEmail" required />
+            </div>
+          </div>
+          <div class="field">
+            <label for="setLocation">Lieu du tournage</label>
+            <input type="text" id="setLocation" required />
+          </div>
+          <div class="field">
+            <label for="setChannels">Supports de diffusion</label>
+            <textarea id="setChannels" rows="2" required></textarea>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="setDuration">Durée d'autorisation</label>
+              <input type="text" id="setDuration" required />
+            </div>
+            <div class="field">
+              <label for="setTerritory">Territoire</label>
+              <input type="text" id="setTerritory" required />
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; justify-content:space-between; flex-wrap:wrap; margin-top:8px;">
+            <button type="submit" class="btn btn-primary">Enregistrer les réglages</button>
+            <button type="button" class="btn btn-outline" onclick="logoutProd()">Déconnexion Production</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL PIN -->
+  <div id="pinModal" class="overlay hidden">
+    <div class="modal">
+      <h2 style="margin-bottom:6px;">Accès Production</h2>
+      <p class="muted" style="margin-bottom:16px;">Entrez le code PIN serveur pour accéder au QR Code, aux signatures et aux réglages.</p>
+      <div id="pinError" class="banner banner-err hidden"></div>
+      <form id="pinForm">
+        <div class="field">
+          <input type="password" id="pinInput" inputmode="numeric" placeholder="Code PIN" required autofocus />
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-outline btn-full" onclick="closePinModal()">Annuler</button>
+          <button type="submit" class="btn btn-dark btn-full">Déverrouiller</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PLEIN ÉCRAN QR -->
+  <div id="fsQrOverlay" class="fs-qr hidden">
+    <button type="button" class="btn btn-outline fs-close" onclick="closeFullscreenQr()">✕ Fermer</button>
+    <h1 id="fsQrTitle" style="font-size:1.7rem; margin-bottom:6px;"></h1>
+    <p class="muted" style="font-size:1.05rem; margin-bottom:20px;">Scannez ce QR Code pour signer l'autorisation de droit à l'image</p>
+    <div id="fsQrContainer" style="padding:18px; border:3px solid #0f172a; border-radius:20px; background:#fff;"></div>
+    <p id="fsQrUrlText" class="muted" style="margin-top:16px; word-break:break-all;"></p>
+  </div>
+
+  <script>
+    let currentSettings = {
+      projectName: 'GeoGuessr IRL',
+      producer: 'Production Audiovisuelle',
+      rgpdEmail: 'contact@exemple.fr',
+      location: 'Montpellier, France',
+      channels: 'YouTube, réseaux sociaux, site web',
+      duration: '5 ans',
+      territory: 'Monde entier'
+    };
+    let adminToken = sessionStorage.getItem('prod_admin_token') || '';
+    let signaturesCache = [];
+    let lastSubmittedRecord = null;
+    let compressedPhotoDataUrl = '';
+    let pollTimer = null;
+
+    // --- CANVAS SIGNATURE ---
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    let hasSigned = false;
+
+    function resizeCanvas() {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width) return;
+      const snapshot = hasSigned ? canvas.toDataURL('image/png') : null;
+      canvas.width = rect.width * ratio;
+      canvas.height = rect.height * ratio;
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.lineWidth = 2.6;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#0f172a';
+      if (snapshot) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
+        img.src = snapshot;
+      }
+    }
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    canvas.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      canvas.setPointerCapture(e.pointerId);
+      drawing = true;
+      hasSigned = true;
+      const p = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x + 0.1, p.y + 0.1);
+      ctx.stroke();
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      if (!drawing) return;
+      e.preventDefault();
+      const p = getPos(e);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    });
+
+    function endDraw() { drawing = false; }
+    canvas.addEventListener('pointerup', endDraw);
+    canvas.addEventListener('pointercancel', endDraw);
+
+    function clearSignature() {
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      hasSigned = false;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // --- TEXTE LÉGAL DYNAMIQUE ---
+    function buildLegalText(settings, signerName, isMinor, guardianName, guardianRelation) {
+      const dateStr = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+      const identite = isMinor
+        ? `Je soussigné(e) ${guardianName || '[Nom du représentant légal]'}, agissant en qualité de ${guardianRelation || 'représentant légal'} du mineur ${signerName || '[Prénom et Nom du mineur]'},`
+        : `Je soussigné(e) ${signerName || '[Prénom et Nom]'},`;
+
+      return `${identite}
+
+Autorise expressément et à titre gratuit ${settings.producer} à fixer, reproduire et communiquer au public mon image, ma voix et mes propos captés le ${dateStr} à ${settings.location} dans le cadre du tournage intitulé « ${settings.projectName} ».
+
+1. Supports de diffusion : ${settings.channels}.
+2. Durée et territoire : la présente autorisation est consentie pour une durée de ${settings.duration}, sur le territoire suivant : ${settings.territory}.
+3. Cadre légal (Art. 9 du Code civil) : le producteur s'engage à ne procéder à aucune exploitation susceptible de porter atteinte à la dignité, à la vie privée ou à la réputation de la personne filmée.
+4. Données personnelles (RGPD) : les données recueillies (identité, coordonnées, signature et photo facultative) servent exclusivement à la preuve de la présente autorisation. Vous disposez d'un droit d'accès, de rectification et d'effacement en écrivant à : ${settings.rgpdEmail}.`;
+    }
+
+    function refreshLegalPreview() {
+      const name = document.getElementById('fullName').value.trim();
+      const isMinor = document.getElementById('isMinor').checked;
+      const gName = document.getElementById('guardianName').value.trim();
+      const gRel = document.getElementById('guardianRelation').value.trim();
+      document.getElementById('legalTextPreview').textContent =
+        buildLegalText(currentSettings, name, isMinor, gName, gRel);
+    }
+
+    ['fullName', 'guardianName', 'guardianRelation'].forEach(id => {
+      document.getElementById(id).addEventListener('input', refreshLegalPreview);
+    });
+    document.getElementById('isMinor').addEventListener('change', (e) => {
+      document.getElementById('guardianSection').classList.toggle('hidden', !e.target.checked);
+      refreshLegalPreview();
+    });
+
+    // --- PHOTO COMPRESSION ---
+    document.getElementById('photoInput').addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 420;
+          let w = img.width, h = img.height;
+          if (w > h && w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+          else if (h >= w && h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          compressedPhotoDataUrl = c.toDataURL('image/jpeg', 0.72);
+          document.getElementById('photoPreview').src = compressedPhotoDataUrl;
+          document.getElementById('photoPreviewWrap').classList.remove('hidden');
+          document.getElementById('removePhotoBtn').classList.remove('hidden');
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function clearPhoto() {
+      compressedPhotoDataUrl = '';
+      document.getElementById('photoInput').value = '';
+      document.getElementById('photoPreviewWrap').classList.add('hidden');
+      document.getElementById('removePhotoBtn').classList.add('hidden');
+    }
+
+    // --- SOUMISSION PASSANT ---
+    document.getElementById('releaseForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errBox = document.getElementById('formError');
+      errBox.classList.add('hidden');
+
+      const fullName = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const isMinor = document.getElementById('isMinor').checked;
+      const guardianName = document.getElementById('guardianName').value.trim();
+      const guardianRelation = document.getElementById('guardianRelation').value.trim();
+      const accepted = document.getElementById('accepted').checked;
+
+      if (!fullName) return showErr('Veuillez renseigner votre Prénom et Nom.');
+      if (isMinor && !guardianName) return showErr('Veuillez renseigner le nom du représentant légal.');
+      if (!accepted) return showErr('Veuillez cocher la case d’acceptation de l’autorisation.');
+      if (!hasSigned) return showErr('Veuillez apposer votre signature manuscrite dans le cadre.');
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Enregistrement en cours...';
+
+      try {
+        const res = await fetch('/api/signatures', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fullName,
+            email,
+            phone,
+            isMinor,
+            guardianName,
+            guardianRelation,
+            accepted,
+            photoDataUrl: compressedPhotoDataUrl,
+            signatureDataUrl: canvas.toDataURL('image/png')
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+
+        lastSubmittedRecord = data.record;
+        document.getElementById('passantFormCard').classList.add('hidden');
+        document.getElementById('passantSuccessCard').classList.remove('hidden');
+        document.getElementById('successSummary').textContent =
+          `Merci ${fullName}. Votre autorisation pour « ${currentSettings.projectName} » a bien été transmise à l'équipe de production (réf. ${data.record.id.slice(0, 8)}).`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        showErr(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Valider et signer l'autorisation";
+      }
+
+      function showErr(msg) {
+        errBox.textContent = msg;
+        errBox.classList.remove('hidden');
+        errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+
+    function resetForNextPerson() {
+      document.getElementById('releaseForm').reset();
+      document.getElementById('guardianSection').classList.add('hidden');
+      clearPhoto();
+      clearSignature();
+      refreshLegalPreview();
+      document.getElementById('passantSuccessCard').classList.add('hidden');
+      document.getElementById('passantFormCard').classList.remove('hidden');
+      setTimeout(resizeCanvas, 50);
+    }
+
+    // --- GÉNÉRATION PDF ---
+    function generateRecordPdf(rec) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+      const s = rec.settingsSnapshot || currentSettings;
+      const signedDate = new Date(rec.signedAt).toLocaleString('fr-FR');
+
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, 210, 26, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(15);
+      doc.text("AUTORISATION DE DROIT A L'IMAGE", 14, 12);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text(`Projet : ${s.projectName}  |  Production : ${s.producer}`, 14, 19);
+
+      doc.setTextColor(15, 23, 42);
+      let y = 36;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text('Identité du participant', 14, y);
+      y += 7;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text(`Nom complet : ${rec.fullName}`, 14, y); y += 6;
+      if (rec.email) { doc.text(`E-mail : ${rec.email}`, 14, y); y += 6; }
+      if (rec.phone) { doc.text(`Téléphone : ${rec.phone}`, 14, y); y += 6; }
+      if (rec.isMinor) {
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Participant mineur — Représentant légal : ${rec.guardianName} (${rec.guardianRelation})`, 14, y);
+        doc.setFont('helvetica', 'normal');
+        y += 6;
+      }
+      doc.text(`Date et heure (serveur) : ${signedDate}`, 14, y); y += 6;
+      doc.text(`Référence : ${rec.id}`, 14, y);
+
+      if (rec.photoDataUrl) {
+        try {
+          doc.addImage(rec.photoDataUrl, 'JPEG', 160, 32, 34, 34);
+        } catch (e) {}
+      }
+
+      y = Math.max(y + 12, 74);
+      doc.setDrawColor(203, 213, 225);
+      doc.line(14, y - 4, 196, y - 4);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text("Texte de l'autorisation", 14, y + 2);
+      y += 9;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      const legal = buildLegalText(s, rec.fullName, rec.isMinor, rec.guardianName, rec.guardianRelation);
+      const lines = doc.splitTextToSize(legal, 182);
+      doc.text(lines, 14, y);
+      y += lines.length * 4.7 + 10;
+
+      if (y > 225) { doc.addPage(); y = 20; }
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.text('Signature manuscrite :', 14, y);
+      y += 4;
+      doc.setDrawColor(148, 163, 184);
+      doc.rect(14, y, 82, 34);
+      if (rec.signatureDataUrl) {
+        try { doc.addImage(rec.signatureDataUrl, 'PNG', 16, y + 2, 78, 30); } catch (e) {}
+      }
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      const ipInfo = rec.audit && rec.audit.ip ? `IP : ${rec.audit.ip} | ` : '';
+      doc.text(`Preuve numérique horodatée — ${ipInfo}Horodatage UTC : ${rec.signedAt}`, 14, 286);
+
+      const safeName = rec.fullName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      doc.save(`droit-image-${safeName}-${rec.id.slice(0, 6)}.pdf`);
+    }
+
+    function downloadLastPdf() {
+      if (lastSubmittedRecord) generateRecordPdf(lastSubmittedRecord);
+    }
+
+    // --- VUES & AUTH PRODUCTION ---
+    function switchView(mode) {
+      const isProd = mode === 'prod';
+      document.getElementById('viewPassant').classList.toggle('hidden', isProd);
+      document.getElementById('viewProd').classList.toggle('hidden', !isProd);
+      document.getElementById('btnModePassant').classList.toggle('active', !isProd);
+      document.getElementById('btnModeProd').classList.toggle('active', isProd);
+      if (!isProd) {
+        stopPolling();
+        setTimeout(resizeCanvas, 50);
+      } else {
+        renderQrCode();
+        loadSignatures();
+        startPolling();
+      }
+    }
+
+    function openProdView() {
+      if (adminToken) {
+        switchView('prod');
+      } else {
+        document.getElementById('pinError').classList.add('hidden');
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinModal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('pinInput').focus(), 60);
+      }
+    }
+
+    function closePinModal() {
+      document.getElementById('pinModal').classList.add('hidden');
+    }
+
+    document.getElementById('pinForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pin = document.getElementById('pinInput').value.trim();
+      const errEl = document.getElementById('pinError');
+      errEl.classList.add('hidden');
+      try {
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Code incorrect');
+        adminToken = data.token;
+        sessionStorage.setItem('prod_admin_token', adminToken);
+        closePinModal();
+        switchView('prod');
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      }
+    });
+
+    function logoutProd() {
+      adminToken = '';
+      sessionStorage.removeItem('prod_admin_token');
+      switchView('passant');
+    }
+
+    function switchProdTab(tab) {
+      ['qr', 'signed', 'settings'].forEach(t => {
+        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
+        document.getElementById('prodPanel' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('hidden', t !== tab);
+      });
+      if (tab === 'signed') loadSignatures();
+    }
+
+    // --- QR CODE ---
+    function getPublicUrl() {
+      const input = document.getElementById('qrUrlInput');
+      if (!input.value) input.value = window.location.origin + '/';
+      return input.value.trim();
+    }
+
+    function renderQrCode() {
+      const url = getPublicUrl();
+      document.getElementById('qrCardTitle').textContent = currentSettings.projectName;
+      const box = document.getElementById('qrContainer');
+      box.innerHTML = '';
+      new QRCode(box, { text: url, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.H });
+    }
+
+    document.getElementById('qrUrlInput').addEventListener('input', renderQrCode);
+
+    function copyQrUrl() {
+      navigator.clipboard.writeText(getPublicUrl());
+    }
+
+    function openFullscreenQr() {
+      const url = getPublicUrl();
+      document.getElementById('fsQrTitle').textContent = currentSettings.projectName;
+      document.getElementById('fsQrUrlText').textContent = url;
+      const box = document.getElementById('fsQrContainer');
+      box.innerHTML = '';
+      const size = Math.min(window.innerWidth - 96, 320);
+      new QRCode(box, { text: url, width: size, height: size, correctLevel: QRCode.CorrectLevel.H });
+      document.getElementById('fsQrOverlay').classList.remove('hidden');
+    }
+
+    function closeFullscreenQr() {
+      document.getElementById('fsQrOverlay').classList.add('hidden');
+    }
+
+    function downloadQrPoster() {
+      const qrCanvas = document.querySelector('#qrContainer canvas');
+      if (!qrCanvas) return;
+      const c = document.createElement('canvas');
+      c.width = 900; c.height = 1200;
+      const g = c.getContext('2d');
+      g.fillStyle = '#ffffff';
+      g.fillRect(0, 0, c.width, c.height);
+
+      g.fillStyle = '#0f172a';
+      g.fillRect(0, 0, c.width, 190);
+      g.fillStyle = '#ffffff';
+      g.textAlign = 'center';
+      g.font = 'bold 52px sans-serif';
+      g.fillText(currentSettings.projectName, 450, 95);
+      g.font = 'bold 28px sans-serif';
+      g.fillStyle = '#a5b4fc';
+      g.fillText("AUTORISATION DE DROIT A L'IMAGE", 450, 148);
+
+      g.fillStyle = '#0f172a';
+      g.font = 'bold 34px sans-serif';
+      g.fillText('Scannez pour signer sur votre téléphone', 450, 275);
+
+      g.strokeStyle = '#0f172a';
+      g.lineWidth = 8;
+      g.strokeRect(175, 330, 550, 550);
+      g.drawImage(qrCanvas, 205, 360, 490, 490);
+
+      g.fillStyle = '#475569';
+      g.font = '24px sans-serif';
+      g.fillText(getPublicUrl(), 450, 960);
+      g.font = '22px sans-serif';
+      g.fillText(`Production : ${currentSettings.producer}`, 450, 1040);
+
+      const a = document.createElement('a');
+      a.download = `affiche-qr-${currentSettings.projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`;
+      a.href = c.toDataURL('image/png');
+      a.click();
+    }
+
+    // --- LISTE DES SIGNATURES ---
+    async function loadSignatures() {
+      if (!adminToken) return;
+      try {
+        const res = await fetch('/api/signatures', {
+          headers: { 'x-admin-token': adminToken }
+        });
+        if (res.status === 401) { logoutProd(); return; }
+        signaturesCache = await res.json();
+        document.getElementById('signedCountBadge').textContent = signaturesCache.length;
+        renderSignaturesList();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+    }
+
+    function renderSignaturesList() {
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      const filtered = signaturesCache.filter(r =>
+        (r.fullName || '').toLowerCase().includes(q) ||
+        (r.email || '').toLowerCase().includes(q)
+      );
+      const container = document.getElementById('signaturesList');
+      if (!filtered.length) {
+        container.innerHTML = '<p class="muted" style="text-align:center; padding:24px 0;">Aucune autorisation signée pour le moment.</p>';
+        return;
+      }
+      container.innerHTML = filtered.map(r => {
+        const date = new Date(r.signedAt).toLocaleString('fr-FR');
+        const minorTag = r.isMinor ? `<span class="badge" style="background:#fef3c7;color:#92400e;">Mineur · Rep: ${escapeHtml(r.guardianName)}</span>` : '';
+        const photoHtml = r.photoDataUrl ? `<img src="${r.photoDataUrl}" class="photo-thumb" alt="Photo" />` : '';
+        return `
+          <div class="sig-item">
+            <div class="sig-item-top">
+              <div style="display:flex; gap:12px; align-items:center;">
+                ${photoHtml}
+                <div>
+                  <div style="font-weight:700; font-size:1rem;">${escapeHtml(r.fullName)} ${minorTag}</div>
+                  <div class="muted" style="font-size:0.82rem;">${escapeHtml(date)}</div>
+                  <div class="muted" style="font-size:0.82rem;">${escapeHtml(r.email || 'Pas d’e-mail')} ${r.phone ? '· ' + escapeHtml(r.phone) : ''}</div>
+                </div>
+              </div>
+              <img src="${r.signatureDataUrl}" class="sig-mini-img" alt="Signature" />
+            </div>
+            <div style="display:flex; gap:8px; margin-top:12px; justify-content:flex-end;">
+              <button class="btn btn-dark btn-sm" onclick="downloadRecordById('${r.id}')">📄 PDF</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteRecord('${r.id}', '${escapeHtml(r.fullName).replace(/'/g, "\\'")}')">Supprimer</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function downloadRecordById(id) {
+      const rec = signaturesCache.find(r => r.id === id);
+      if (rec) generateRecordPdf(rec);
+    }
+
+    async function deleteRecord(id, name) {
+      if (!confirm(`Supprimer définitivement l'autorisation de ${name} ?`)) return;
+      const res = await fetch(`/api/signatures/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-token': adminToken }
+      });
+      if (res.ok) loadSignatures();
+    }
+
+    function exportCsv() {
+      const headers = ['ID', 'Date', 'Nom complet', 'Email', 'Téléphone', 'Mineur', 'Représentant légal', 'Projet', 'IP'];
+      const rows = signaturesCache.map(r => [
+        r.id,
+        new Date(r.signedAt).toLocaleString('fr-FR'),
+        r.fullName,
+        r.email || '',
+        r.phone || '',
+        r.isMinor ? 'Oui' : 'Non',
+        r.guardianName || '',
+        (r.settingsSnapshot && r.settingsSnapshot.projectName) || '',
+        (r.audit && r.audit.ip) || ''
+      ]);
+      const csv = '\uFEFF' + [headers, ...rows]
+        .map(line => line.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(';'))
+        .join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `autorisations-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+    }
+
+    function startPolling() {
+      stopPolling();
+      pollTimer = setInterval(loadSignatures, 15000);
+    }
+    function stopPolling() {
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = null;
+    }
+
+    // --- RÉGLAGES ---
+    function populateSettingsUI() {
+      document.getElementById('headerProjectName').textContent = currentSettings.projectName;
+      document.getElementById('introProjectName').textContent = currentSettings.projectName;
+      document.title = `Droit à l'Image — ${currentSettings.projectName}`;
+      document.getElementById('setProjectName').value = currentSettings.projectName;
+      document.getElementById('setProducer').value = currentSettings.producer;
+      document.getElementById('setRgpdEmail').value = currentSettings.rgpdEmail;
+      document.getElementById('setLocation').value = currentSettings.location;
+      document.getElementById('setChannels').value = currentSettings.channels;
+      document.getElementById('setDuration').value = currentSettings.duration;
+      document.getElementById('setTerritory').value = currentSettings.territory;
+      refreshLegalPreview();
+      if (!document.getElementById('viewProd').classList.contains('hidden')) renderQrCode();
+    }
+
+    document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fb = document.getElementById('settingsFeedback');
+      fb.classList.add('hidden');
+      const payload = {
+        projectName: document.getElementById('setProjectName').value.trim(),
+        producer: document.getElementById('setProducer').value.trim(),
+        rgpdEmail: document.getElementById('setRgpdEmail').value.trim(),
+        location: document.getElementById('setLocation').value.trim(),
+        channels: document.getElementById('setChannels').value.trim(),
+        duration: document.getElementById('setDuration').value.trim(),
+        territory: document.getElementById('setTerritory').value.trim()
+      };
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+        body: JSON.stringify(payload)
+      });
+      if (res.status === 401) { logoutProd(); return; }
+      if (res.ok) {
+        currentSettings = await res.json();
+        populateSettingsUI();
+        fb.textContent = 'Réglages enregistrés et synchronisés sur le serveur.';
+        fb.classList.remove('hidden');
+      }
+    });
+
+    // --- INIT ---
+    async function init() {
+      resizeCanvas();
+      try {
+        const [setRes, healthRes] = await Promise.all([
+          fetch('/api/settings'),
+          fetch('/api/health')
+        ]);
+        if (setRes.ok) currentSettings = await setRes.json();
+        if (healthRes.ok) {
+          const h = await healthRes.json();
+          if (!h.persistentVolume) {
+            document.getElementById('volumeWarningBanner').classList.remove('hidden');
+            document.getElementById('statusDot').classList.add('warn');
+          }
+          if (h.usingDefaultPin) {
+            document.getElementById('pinWarningBanner').classList.remove('hidden');
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      populateSettingsUI();
+      if (window.location.hash === '#prod') openProdView();
+    }
+
+    init();
+  </script>
+</body>
+</html>
